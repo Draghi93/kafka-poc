@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: poc
+
+  # Kafka Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: betting-group
+    template:
+      default-topic: bet_placement
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    url: /v3/api-docs

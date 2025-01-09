@@ -1,0 +1,233 @@
+Proof of Concept Project Requirements: Spring Boot with Kafka Integration for a Betting System
+
+================================================== WIP ==================================================
+
+The purpose of this Proof of Concept (POC) project is to demonstrate the integration between Kafka and a Spring Boot application in the context of a betting system. The POC will showcase the following goals:
+
+	1.	Kafka Integration: Implement Kafka producers and consumers for managing bet placements and processing bet results.
+	2.	REST Endpoints: Provide RESTful endpoints for creating bets, querying bet status, and retrieving betting outcomes.
+	3.	Database Structure (JPA/Hibernate): Use JPA (Hibernate) for persistence, with entities designed to store bet details, user accounts, events, and transaction logs.
+	4.	Transactional and Idempotent Processing: Ensure bet creation, processing, and result settlement are transactional and idempotent.
+
+High-Level Architecture
+
+	•	Kafka Integration: Leverage Kafka to publish bet-related messages (e.g., bet placement, result processing).
+	•	REST API: Use Spring Boot to expose endpoints for bet placements, querying bet status, and tracking bet outcomes.
+	•	Database: Use JPA (Hibernate) for database interaction with tables to store bets, user accounts, events, and transaction logs.
+	•	NFR: Transactional Support - Ensure atomicity of bet placement, settlement, and status updates.
+
+Requirements
+
+1. Kafka Integration
+
+	•	Kafka Producer:
+        •	Publish bet placements and results to specific Kafka topics.
+        •	Ensure that messages sent to Kafka are idempotent to prevent duplicate bet entries.
+        •	Topics:
+            •	bet_placement_topic: Handles new bets placed by users.
+            •	bet_result_topic: Publishes results and updates for settled bets.
+	•	Kafka Consumer:
+        •	Consume messages from Kafka topics to process bet results and update statuses.
+        •	Save bet results and outcomes to the database for querying.
+        •	Topics:
+            •	bet_placement_topic: Listens for new bet placements and stores them.
+            •	bet_result_topic: Listens for result updates and settles bets accordingly.
+
+2. REST Endpoints
+
+The following endpoints should be exposed through the Spring Boot application:
+
+   HTTP    |    Method	Endpoint	         |   Description
+------------------------------------------------------------------------------------------------
+1. POST    |    /api/bets/place	         |   Places a new bet for a user.
+------------------------------------------------------------------------------------------------
+2. GET	    |    /api/bets	                 |   Retrieves all bets for a user.
+------------------------------------------------------------------------------------------------
+3. GET	    |    /api/bets/{betId}	         |   Retrieves details of a specific bet.
+-------------------------------------------------------------------------------------
+4. GET	    |    /api/bets/results	         |   Retrieves all bet results for a user.
+------------------------------------------------------------------------------------------------
+5. GET	    |    /api/bets/results/{betId}	 |   Retrieves the result of a specific bet.
+------------------------------------------------------------------------------------------------
+6. POST    |    /api/event/insert	         |   Insert a new event.
+------------------------------------------------------------------------------------------------
+7. POST    |    /api/user/create	         |   Insert a new User entry.
+------------------------------------------------------------------------------------------------
+
+Endpoint Details
+
+	1. POST /api/bets/place
+    	•	Purpose: Allows users to place a new bet on a specific event. This endpoint validates the user’s balance and the event’s availability, then sends the bet details to Kafka for processing.
+    	•	Input:
+    	    •	JSON Payload containing a Bet Object with the following attributes:
+                •	userId: The ID of the user placing the bet.
+                •	eventId: The ID of the event the bet is being placed on.
+                •	betAmount (Decimal): The amount of money being wagered.
+                •	betType (String): Type of bet, such as “Win”, “Place”, or other specific bet types relevant to the event.
+    	•	Process:
+            1.	Balance Check: Verifies that the user has sufficient balance to place the bet. TBD???
+            2.	Event Validation: Checks that the specified event is available for betting (e.g., it is in an “Upcoming” status and hasn’t closed).
+            3.	Kafka Message Publishing: Sends the validated bet details to the bet_placement_topic for further processing.
+            4.	Database Record Creation: Stores the bet details in the Bet table with a status of “Pending”.
+    	•	Response:
+            •	Returns a JSON Response with:
+                •	betId: Unique identifier for the bet.
+                •	status: Initial status of the bet, typically set to “Pending”.
+
+    2. GET /api/bets
+
+    	•	Purpose: Retrieves all bets placed by a specific user, providing a summary of their betting history and current bet statuses.
+    	•	Input:
+    	•	Query Parameter:
+            •	userId: The ID of the user for whom the bets are being retrieved.
+    	•	Process:
+            1.	User Validation: Checks that the specified user exists.
+            2.	Database Query: Retrieves all bets associated with the user ID from the Bet table.
+            3.	Filtering (Optional): Additional filtering by status or event can be added to retrieve only active or specific event-related bets.
+    	•	Response:
+    	    •	Returns a JSON Array containing:
+    	        •	List of bets with key information, including betId, eventId, betAmount, betType, and status.
+
+    3. GET /api/bets/{betId}
+
+    	•	Purpose: Retrieves detailed information for a specific bet, providing a full record of the bet details and its current status.
+    	•	Input:
+    	    •	Path Variable:
+    	        •	betId: The unique ID of the bet being retrieved.
+    	•	Process:
+            1.	Bet Existence Check: Confirms that the specified betId exists in the Bet table.
+            2.	Database Query: Fetches detailed information for the specified bet.
+    	•	Response:
+    	    •	Returns a JSON Object with detailed bet information, including:
+    	        •	betId, userId, eventId, betAmount, betType, status, created_at, and updated_at.
+
+    4. GET /api/bets/results
+
+    	•	Purpose: Retrieves the results of all settled bets for a specific user, allowing the user to view which bets have been won or lost.
+    	•	Input:
+    	    •	Query Parameter:
+    	        •	userId: The ID of the user for whom the bet results are being retrieved.
+    	•	Process:5
+            1.	User Validation: Verifies that the specified user exists.
+            2.	Database Query: Fetches all settled bets (where status is “Won”, “Lost”, or other settled statuses) for the specified user.
+    	•	Response:
+    	    •	Returns a JSON Array containing:
+    	        •	List of settled bets for the user, with details including betId, eventId, betType, status, payout (if applicable), and processed_at (date of result processing).
+
+    5. GET /api/bets/results/{betId}
+
+    	•	Purpose: Retrieves the result and outcome for a specific bet, providing a detailed record of whether the bet was won, lost, or otherwise resolved.
+    	•	Input:
+    	    •	Path Variable:
+    	        •	betId: The unique ID of the bet for which the result is being retrieved.
+    	•	Process:
+            1.	Bet Existence Check: Confirms that the specified betId exists and has a settled status in the Bet table.
+            2.	Database Query: Fetches the result details, including the status and payout, if applicable.
+    	•	Response:
+    	    •	Returns a JSON Object containing:
+    	        •	Detailed bet result, including betId, eventId, betType, status (e.g., “Won”, “Lost”), payout, and processed_at.
+
+    6. POST /api/event/insert
+
+        	•	Purpose: Allows Traders to insert events. This endpoint will check that the event will not be created for a date in the past.
+            •	Input:
+                •	JSON Payload containing an Event Object with the following attributes:
+                   •    name (String): Name or description of the event.
+                   •	event_date (Date): Date and time when the event occurs.
+                   •	status (Enum or String): Status of the event (e.g., “Upcoming”, “Completed”).
+            •	Process:
+                1.	Validate input data: Verifies that the event values are valid.
+                2.	Database Record Creation: Stores the event details in the Event table.
+            •	Response:
+                •	Returns a JSON Response with:
+                    •	id: Event id.
+                    •	name: Event name
+                    •	event_date: Event date.
+                    •	status: Event status.
+
+    7. POST /api/user/create
+
+        	•	Purpose: Allows users to create an account. This endpoint will insert user data into the Database.
+            •	Input:
+                •	JSON Payload containing an User Object with the following attributes:
+                   •	username (String): Unique username for the user.
+                   •	balance (Decimal): User’s account balance.
+            •	Process:
+                1.	Validate input data: Verify that the event values are valid.
+                2.	Database Record Creation: Stores the event details in the User table.
+            •	Response:
+                •	Returns a JSON Response with:
+                    •	id: User id.
+                    •	username: Username
+                    •	balance: Balance.
+                    •	created_at: Creation date.
+
+3. Database Design (JPA/Hibernate)
+
+The POC requires the following tables, implemented as JPA entities:
+
+	1.	User: Stores user information for placing bets.
+	2.	Event: Stores information about events on which bets are placed.
+	3.	Bet: Stores individual bets, including the user, event, and bet details.
+	4.	BetResultLog: Logs results and outcomes for each bet.
+
+Entities and Relationships
+
+	1.	User Table
+	    •	Fields:
+            •	id (Primary Key): Unique identifier for each user.
+            •	username (String): Unique username for the user.
+            •	balance (Decimal): User’s account balance.
+            •	created_at (Date): Date of user registration.
+	2.	Event Table
+	    •	Fields:
+            •	id (Primary Key): Unique identifier for each event.
+            •	name (String): Name or description of the event.
+            •	event_date (Date): Date and time when the event occurs.
+            •	status (String): Status of the event (e.g., “Upcoming”, “Completed”).
+        •	Relationship:
+            •	One-to-Many relationship with Bet (One event can have multiple bets).
+	3.	Bet Table
+	    •	Fields:
+            •	id (Primary Key): Unique identifier for each bet.
+            •	user_id (Foreign Key): References the User table.
+            •	event_id (Foreign Key): References the Event table.
+            •	bet_amount (Decimal): The amount wagered by the user.
+            •	bet_type (String): Type of bet (e.g., “Win”, “Place”).
+            •	status (Enum or String): Current status of the bet (e.g., “Pending”, “Settled”).
+            •	created_at (Date): Date when the bet was placed.
+	    •	Relationship:
+            •	Many-to-One relationship with User.
+            •	Many-to-One relationship with Event.
+	4.	BetResultLog Table
+	    •	Fields:
+            •	id (Primary Key): Unique identifier for each log entry.
+            •	bet_id (Foreign Key): References the Bet table.
+            •	status (Enum or String): Result status (e.g., “Won”, “Lost”).
+            •	payout (Decimal): Amount won (or lost if negative).
+            •	processed_at (Date): Date when the bet was settled.
+	    •	Relationship:
+	        •	Many-to-One relationship with Bet (One Bet can have multiple log entries tracking status updates).
+
+Database Relationships
+
+	•	User (1) ↔ (M) Bet: Each user can place multiple bets.
+	•	Event (1) ↔ (M) Bet: Each event can have multiple bets placed on it.
+	•	Bet (1) ↔ (M) BetResultLog: Each bet can have multiple result logs tracking different stages of processing (e.g., initial status, final result).
+
+Additional Requirements
+
+	•	Endpoints: Define and generate the API endpoint specifications using the OpenAPI Generator to ensure standardized and consistent endpoint documentation, implementation, and integration.
+	•	Database schema: Implement the required database schema changes using Liquibase to ensure version control, consistency, and traceability of database modifications across environments.
+	•	Error Handling: Implement error handling for Kafka failures (both producer and consumer) and database operations.
+	•	Logging: Use a logger (e.g., Logback) to record application-level events and errors, particularly for tracking bet placements and settlements.
+	•	Transactional Support: Use transactions to ensure bet placement, Kafka publishing, and result logging are atomic.
+
+Future Scope (optional, if needed for PoC)
+
+	1.	User Authentication and Authorization: Add authentication (e.g., JWT, OAuth2) for securing bet placement and retrieval endpoints.
+	2.	Enhanced Monitoring: Integrate monitoring tools like Prometheus and Grafana to observe Kafka throughput and database performance.
+	3.	Betting Odds Service: Integrate a service for retrieving and displaying real-time betting odds.
+	4.	Settlement Retry Logic: Implement a retry mechanism for failed bet settlements due to transient issues.
+
+This setup ensures that Kafka and Spring Boot can manage the betting system’s requirements, covering user bet placements, event tracking, and result settlements in a reliable and transactional manner.
