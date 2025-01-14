@@ -37,9 +37,9 @@ Requirements
 
 The following endpoints should be exposed through the Spring Boot application:
 
-   HTTP    |    Method	Endpoint	         |   Description
+   HTTP     |    Method	Endpoint	         |   Description
 ------------------------------------------------------------------------------------------------
-1. POST    |    /api/bets/place	         |   Places a new bet for a user.
+1. POST     |    /api/bets/place	         |   Places a new bet for a user.
 ------------------------------------------------------------------------------------------------
 2. GET	    |    /api/bets	                 |   Retrieves all bets for a user.
 ------------------------------------------------------------------------------------------------
@@ -49,9 +49,9 @@ The following endpoints should be exposed through the Spring Boot application:
 ------------------------------------------------------------------------------------------------
 5. GET	    |    /api/bets/results/{betId}	 |   Retrieves the result of a specific bet.
 ------------------------------------------------------------------------------------------------
-6. POST    |    /api/event/insert	         |   Insert a new event.
+6. POST     |    /api/event/insert	         |   Insert a new event.
 ------------------------------------------------------------------------------------------------
-7. POST    |    /api/user/create	         |   Insert a new User entry.
+7. POST     |    /api/user/create	         |   Insert a new User entry.
 ------------------------------------------------------------------------------------------------
 
 Endpoint Details
