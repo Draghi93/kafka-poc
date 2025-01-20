@@ -2,6 +2,17 @@ spring:
   application:
     name: poc
 
+  # Database configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5436/poc-db
+    username: admin
+    password: pass
+    driver-class-name: org.postgresql.Driver
+
+  liquibase:
+    change-log: classpath:liquibase/changelog-master.yml
+    enabled: true
+
   # Kafka Configuration
   kafka:
     bootstrap-servers: localhost:9092

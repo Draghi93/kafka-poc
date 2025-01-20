@@ -1,0 +1,11 @@
+version: '3.9'
+
+services:
+  postgres-db:
+    image: postgres:15
+    ports:
+      - "5436:5432" # Maps host port 5436 to container port 5432
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: poc-db
