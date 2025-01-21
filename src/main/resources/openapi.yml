@@ -1,0 +1,75 @@
+openapi: 3.0.1
+info:
+  title: Bet API
+  description: API for managing bets
+  version: 1.0.0
+paths:
+  /api/bets/place:
+    post:
+      summary: Place a bet
+      description: Allows users to place a new bet on a specific event.
+      operationId: placeBet
+      requestBody:
+        description: Bet details to be placed
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceBetRequest'
+      responses:
+        '200':
+          description: Bet placed successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Bet placed successfully!
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid request data
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Internal Server Error
+components:
+  schemas:
+    PlaceBetRequest:
+      type: object
+      required:
+        - userId
+        - eventId
+        - betAmount
+        - betType
+      properties:
+        userId:
+          type: integer
+          format: int64
+          description: The ID of the user placing the bet
+          example: 12345
+        eventId:
+          type: integer
+          format: int64
+          description: The ID of the event the bet is being placed on
+          example: 67890
+        betAmount:
+          type: number
+          format: double
+          description: Amount of money being wagered, supports decimal values
+          example: 50.75
+        betType:
+          type: string
+          description: Type of bet, such as “Win”, “Place”, or other specific bet types relevant to the event
+          example: Win
