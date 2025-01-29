@@ -4,11 +4,19 @@ spring:
 
   # Kafka Configuration
   kafka:
-    bootstrap-servers: localhost:9092
+    bootstrap-servers: localhost:19373
+    listeners: PLAINTEXT://localhost:19373
+    advertised:
+      listeners: PLAINTEXT://localhost:19373
     consumer:
-      group-id: betting-group
+      group-id: bet_group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
     template:
-      default-topic: bet_placement
+      default-topic: bet_placement_topic
 springdoc:
   api-docs:
     path: /v3/api-docs
