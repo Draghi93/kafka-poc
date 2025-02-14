@@ -1,6 +1,15 @@
 version: '3.8'
 
 services:
+  postgres-db:
+    image: postgres:15
+    ports:
+      - "5436:5432" # Use localhost:5436 to connect to development database
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: pass
+      POSTGRES_DB: poc-db
+
   zookeeper:
     image: confluentinc/cp-zookeeper:latest
     container_name: zookeeper
