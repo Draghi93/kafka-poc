@@ -2,6 +2,27 @@ spring:
   application:
     name: poc
 
+  # H2 Database Configuration (for easy build, no need to start the DB server)
+  # comment this datasource if running on Postgres
+  datasource:
+    url: jdbc:h2:mem:testdb
+    driverClassName: org.h2.Driver
+    username: testdb
+    password: test
+
+  # Postgres Database Configuration
+  # Prerequisite: start database server by executing docker compose in test/ directory
+#  datasource:
+#    url: jdbc:postgresql://localhost:5436/poc-db
+#    username: admin
+#    password: pass
+#    driver-class-name: org.postgresql.Driver
+
+  # Liquibase Configuration
+  liquibase:
+    change-log: classpath:liquibase/changelog-master.yml
+    enabled: true
+
   # Kafka Configuration
   kafka:
     bootstrap-servers: localhost:19373

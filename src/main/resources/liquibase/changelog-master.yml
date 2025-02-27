@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - include:
+      file: liquibase/changelog/0001-create-user-schema.yml
+  - include:
+      file: liquibase/changelog/0002-create-event-schema.yml
+  - include:
+      file: liquibase/changelog/0003-create-bet-schema.yml
+  - include:
+      file: liquibase/changelog/0004-create-bet_result_log-schema.yml
